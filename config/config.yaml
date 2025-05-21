@@ -1,0 +1,76 @@
+# SEMRIS Project Configuration
+
+# API Settings
+api:
+  nasa_earthdata:
+    base_url: "https://cmr.earthdata.nasa.gov/search"
+    timeout: 30  # seconds
+    max_retries: 3
+
+# Data Settings
+data:
+  parameters:
+    - name: "NDVI"
+      description: "Normalized Difference Vegetation Index"
+      unit: "dimensionless"
+      range: [-1, 1]
+    - name: "LST"
+      description: "Land Surface Temperature"
+      unit: "Kelvin"
+      range: [200, 350]
+    - name: "Precipitation"
+      description: "Total Precipitation"
+      unit: "mm"
+      range: [0, 1000]
+
+  temporal:
+    default_start_date: "2020-01-01"
+    default_end_date: "2023-12-31"
+    temporal_resolution: "16-day"  # MODIS temporal resolution
+
+  spatial:
+    default_resolution: 250  # meters
+    max_area: 100000  # square kilometers
+
+# Model Settings
+model:
+  rnn:
+    hidden_size: 64
+    num_layers: 2
+    dropout: 0.2
+    batch_size: 32
+    learning_rate: 0.001
+    epochs: 10
+    early_stopping_patience: 10
+    sequence_length: 24  # number of time steps to look back
+    prediction_horizon: 12  # number of time steps to predict ahead
+
+# Visualization Settings
+visualization:
+  default_style: "seaborn"
+  color_maps:
+    ndvi: "RdYlGn"
+    lst: "RdBu_r"
+    precipitation: "Blues"
+  figure_size: [12, 8]
+  dpi: 300
+
+# Dashboard Settings
+dashboard:
+  port: 8050
+  debug: true
+  host: "localhost"
+  refresh_interval: 300  # seconds
+
+# Logging Settings
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/semris.log"
+  max_size: 10485760  # 10MB
+  backup_count: 5
+
+region:
+  lat: 0.0
+  lon: 0.0
+  radius_km: 100 

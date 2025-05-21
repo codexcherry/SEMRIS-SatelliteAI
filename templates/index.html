@@ -1,0 +1,205 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEMRIS - Satellite Environmental Monitoring</title>
+    <link rel="icon" href="/favicon.ico">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .parameter-selector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .parameter-selector button {
+            padding: 10px 15px;
+            margin: 0 5px;
+            border: none;
+            background-color: #e9ecef;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .parameter-selector button.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .summary-card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 15px;
+            text-align: center;
+        }
+        .summary-card h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        .summary-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .summary-card .change {
+            color: #28a745;
+        }
+        .summary-card .change.negative {
+            color: #dc3545;
+        }
+        .visualization-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+        }
+        .visualization-card {
+            height: 400px;
+        }
+        h2 {
+            color: #333;
+            margin-top: 0;
+        }
+        @media (max-width: 768px) {
+            .visualization-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Satellite Environmental Monitoring and Restoration Intelligence System</h1>
+            <p>Bengaluru Region Analysis</p>
+        </div>
+        
+        <div class="parameter-selector">
+            {% for param in parameters %}
+            <button class="param-btn {% if param == 'NDVI' %}active{% endif %}" data-param="{{ param }}">{{ param }}</button>
+            {% endfor %}
+        </div>
+        
+        <div class="summary-grid">
+            <div class="summary-card">
+                <h3>Current Average</h3>
+                <div class="value" id="current-avg">{{ summary.current_avg }}</div>
+            </div>
+            <div class="summary-card">
+                <h3>Predicted Average</h3>
+                <div class="value" id="predicted-avg">{{ summary.predicted_avg }}</div>
+            </div>
+            <div class="summary-card">
+                <h3>Change</h3>
+                <div class="value change {% if '-' in summary.change_percent %}negative{% endif %}" id="change-percent">
+                    {{ summary.change_percent }}
+                </div>
+            </div>
+            <div class="summary-card">
+                <h3>Trend</h3>
+                <div class="value" id="trend">{{ summary.trend }}</div>
+            </div>
+        </div>
+        
+        <div class="visualization-grid">
+            <div class="card visualization-card">
+                <h2>Historical and Predicted Trends</h2>
+                <div id="trend-graph"></div>
+            </div>
+            <div class="card visualization-card">
+                <h2>Degradation Risk Map</h2>
+                <div id="risk-map"></div>
+            </div>
+            <div class="card visualization-card">
+                <h2>Restoration Priority Areas</h2>
+                <div id="priority-chart"></div>
+            </div>
+            <div class="card visualization-card">
+                <h2>Multi-parameter Analysis</h2>
+                <div id="multi-param-chart"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize plots
+        var trendGraph = {{ trend_graph | safe }};
+        var riskMap = {{ risk_map | safe }};
+        var priorityChart = {{ priority_chart | safe }};
+        var multiParamChart = {{ multi_param_chart | safe }};
+        
+        Plotly.newPlot('trend-graph', trendGraph.data, trendGraph.layout);
+        Plotly.newPlot('risk-map', riskMap.data, riskMap.layout);
+        Plotly.newPlot('priority-chart', priorityChart.data, priorityChart.layout);
+        Plotly.newPlot('multi-param-chart', multiParamChart.data, multiParamChart.layout);
+        
+        // Parameter selector functionality
+        document.querySelectorAll('.param-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const param = this.getAttribute('data-param');
+                
+                // Update active button
+                document.querySelectorAll('.param-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // Fetch and update visualizations
+                fetch(`/api/parameter/${param}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update summary
+                        document.getElementById('current-avg').textContent = data.summary.current_avg;
+                        document.getElementById('predicted-avg').textContent = data.summary.predicted_avg;
+                        document.getElementById('change-percent').textContent = data.summary.change_percent;
+                        document.getElementById('trend').textContent = data.summary.trend;
+                        
+                        if (data.summary.change_percent.includes('-')) {
+                            document.getElementById('change-percent').classList.add('negative');
+                        } else {
+                            document.getElementById('change-percent').classList.remove('negative');
+                        }
+                        
+                        // Update plots
+                        Plotly.react('trend-graph', data.trend_graph.data, data.trend_graph.layout);
+                        Plotly.react('risk-map', data.risk_map.data, data.risk_map.layout);
+                        Plotly.react('priority-chart', data.priority_chart.data, data.priority_chart.layout);
+                        Plotly.react('multi-param-chart', data.multi_param_chart.data, data.multi_param_chart.layout);
+                    });
+            });
+        });
+    </script>
+</body>
+</html>
+                
