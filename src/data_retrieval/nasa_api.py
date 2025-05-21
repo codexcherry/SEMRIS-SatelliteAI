@@ -142,13 +142,13 @@ class NASADataRetriever:
         for param in parameters:
             try:
                 logger.info(f"Fetching {param} data...")
-                dataset = self._get_parameter_data(
-                    param,
-                    region['bounds'],
-                    start_date,
-                    end_date
-                )
-                results[param] = dataset
+            dataset = self._get_parameter_data(
+                param,
+                region['bounds'],
+                start_date,
+                end_date
+            )
+            results[param] = dataset
                 logger.info(f"Successfully retrieved {param} data")
             except Exception as e:
                 logger.error(f"Error retrieving {param} data: {str(e)}")

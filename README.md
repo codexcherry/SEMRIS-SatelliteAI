@@ -1,56 +1,40 @@
 # SEMRIS (Satellite-based Environmental Monitoring and Restoration Intelligence System)
 
-A comprehensive system for monitoring and analyzing environmental changes using satellite data and machine learning.
+A comprehensive system for monitoring and analyzing environmental changes using satellite data and machine learning, with a focus on Bengaluru region.
 
 ## Project Overview
 
-SEMRIS is designed to provide actionable insights for environmental monitoring and restoration efforts through the analysis of satellite data. The system processes various environmental parameters to predict vegetation health, biomass levels, and identify potential degradation areas.
+SEMRIS is designed to provide actionable insights for environmental monitoring and restoration efforts through the analysis of satellite data. The system processes various environmental parameters to predict vegetation health, biomass levels, and identify potential degradation areas, with a specific focus on the Bengaluru metropolitan region.
 
-## Workflow Stages
+## Key Features
 
 ### 1. Region Selection
-- Geographic coordinate input
-- Shapefile support
-- Area of interest definition
-- Boundary validation
+- Geographic coordinate-based region selection
+- Focus on Bengaluru region (default coordinates: 12.97°N, 77.59°E)
+- Configurable radius for area of interest
 
 ### 2. Data Retrieval
 - NASA Earthdata API integration
-- Google Earth Engine data access
-- Environmental parameters:
-  - NDVI (Normalized Difference Vegetation Index)
-  - Biomass measurements
-  - Land Surface Temperature
-  - Precipitation data
-  - Land Cover Classification
+- Multiple environmental parameters support
+- Automated data fetching for specified time periods
 
 ### 3. Data Preprocessing
-- Data cleaning and validation
+- Automated data cleaning and validation
 - Time series normalization
-- Spatial interpolation
-- Temporal resampling
-- Data quality assessment
+- Spatial data processing
+- Quality assessment and validation
 
 ### 4. Predictive Modeling
 - RNN-based architecture using PyTorch
-- Temporal pattern recognition
 - Multi-parameter forecasting
-- Model validation and evaluation
-- Prediction confidence scoring
+- Configurable model parameters
+- Automated training pipeline
 
-### 5. Visualization
-- Interactive time series charts
-- Spatial data overlays
-- Heat maps for degradation hotspots
-- Recovery trend analysis
-- Custom visualization tools
-
-### 6. Insights Delivery
-- Web-based dashboard
-- Automated reporting
-- Decision support tools
-- Export capabilities
-- API endpoints for integration
+### 5. Web Interface
+- Interactive dashboard
+- Real-time data visualization
+- Prediction results display
+- User-friendly interface
 
 ## Project Structure
 
@@ -58,36 +42,24 @@ SEMRIS is designed to provide actionable insights for environmental monitoring a
 SEMRIS-SatelliteAI/
 ├── src/
 │   ├── region_selection/
-│   │   ├── __init__.py
-│   │   ├── coordinate_handler.py
-│   │   └── shapefile_processor.py
+│   │   └── coordinate_handler.py
 │   ├── data_retrieval/
-│   │   ├── __init__.py
-│   │   ├── nasa_api.py
-│   │   └── gee_connector.py
+│   │   └── nasa_api.py
 │   ├── preprocessing/
-│   │   ├── __init__.py
-│   │   ├── data_cleaner.py
-│   │   └── time_series_processor.py
+│   │   └── data_cleaner.py
 │   ├── modeling/
-│   │   ├── __init__.py
-│   │   ├── rnn_model.py
-│   │   └── model_trainer.py
-│   ├── visualization/
-│   │   ├── __init__.py
-│   │   ├── chart_generator.py
-│   │   └── spatial_visualizer.py
+│   │   └── rnn_model.py
 │   └── insights/
-│       ├── __init__.py
-│       ├── dashboard.py
-│       └── report_generator.py
+│       └── web_interface.py
 ├── config/
-│   ├── config.yaml
-│   └── api_keys.yaml
+│   └── config.yaml
+├── templates/
+├── static/
 ├── tests/
-│   └── __init__.py
+├── logs/
+├── reports/
 ├── requirements.txt
-└── README.md
+└── main.py
 ```
 
 ## Setup and Installation
@@ -98,10 +70,13 @@ git clone https://github.com/yourusername/SEMRIS-SatelliteAI.git
 cd SEMRIS-SatelliteAI
 ```
 
-2. Create a virtual environment:
+2. Create and activate a virtual environment:
 ```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# On Windows:
+venv\Scripts\activate
+# On Unix/MacOS:
+source venv/bin/activate
 ```
 
 3. Install dependencies:
@@ -109,40 +84,47 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-4. Configure API keys:
-- Copy `config/api_keys.yaml.example` to `config/api_keys.yaml`
-- Add your NASA Earthdata API key and other required credentials
+4. Configure the application:
+- Review and modify `config/config.yaml` for your specific needs
+- Set up any required API keys
 
 ## Usage
 
-1. Region Selection:
-```python
-from src.region_selection.coordinate_handler import CoordinateHandler
-
-handler = CoordinateHandler()
-region = handler.select_region(lat=45.0, lon=-120.0, radius_km=50)
+1. Run the application:
+```bash
+python main.py
 ```
 
-2. Data Retrieval:
-```python
-from src.data_retrieval.nasa_api import NASADataRetriever
+The application will:
+- Select the Bengaluru region (configurable)
+- Retrieve environmental data from NASA
+- Preprocess the data
+- Train predictive models
+- Launch a web interface on port 5000
 
-retriever = NASADataRetriever()
-data = retriever.get_environmental_data(region, parameters=['NDVI', 'LST'])
-```
+2. Access the web interface:
+- Open your browser and navigate to `http://localhost:5000`
+- View environmental data and predictions
+- Interact with the visualization tools
 
-3. Run Analysis:
-```python
-from src.modeling.model_trainer import ModelTrainer
+## Dependencies
 
-trainer = ModelTrainer()
-model = trainer.train_model(data)
-predictions = model.predict_future_trends()
-```
+Key dependencies include:
+- Flask (Web interface)
+- PyTorch (Deep learning)
+- NASA API (Data retrieval)
+- Pandas & NumPy (Data processing)
+- Plotly (Visualization)
+
+For a complete list of dependencies, see `requirements.txt`.
 
 ## Contributing
 
-Please read CONTRIBUTING.md for details on our code of conduct and the process for submitting pull requests.
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
 ## License
 
@@ -150,7 +132,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Acknowledgments
 
-- NASA Earthdata API
-- Google Earth Engine
-- PyTorch
-- Various open-source geospatial libraries 
+- NASA Earthdata API for satellite data
+- PyTorch for deep learning capabilities
+- Flask for web interface
+- All other open-source contributors 
