@@ -66,7 +66,7 @@ SEMRIS-SatelliteAI/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/SEMRIS-SatelliteAI.git
+git clone https://github.com/codexcherry/SEMRIS-SatelliteAI.git
 cd SEMRIS-SatelliteAI
 ```
 
