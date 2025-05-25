@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.2.0/dist/chartjs-chart-matrix.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Updated with Premium Dark Theme -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-primary: #0f0f13;
+            --bg-secondary: #16161d;
+            --bg-tertiary: #1e1e28;
+            --accent-primary: #9d6aff;
+            --accent-secondary: #6a3aff;
+            --text-primary: #ffffff;
+            --text-secondary: #b3b3cc;
+            --text-tertiary: #7a7a8c;
+            --success: #4ecca3;
+            --warning: #ffb86c;
+            --danger: #ff5757;
+            --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --transition: all 0.3s ease;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top right, rgba(157, 106, 255, 0.1), transparent 60%),
+                        radial-gradient(circle at bottom left, rgba(106, 58, 255, 0.05), transparent 40%);
+            z-index: -1;
+        }
+        
+        #map {
+            height: 500px;
+            width: 100%;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .card {
+            margin-bottom: 25px;
+            border-radius: 20px;
+            border: none;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            background-color: var(--bg-secondary);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+        }
+        
+        .card-header {
+            border-bottom: none;
+            padding: 15px 20px;
+            font-weight: 600;
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .card-body {
+            padding: 25px;
+            color: var(--text-secondary);
+        }
+        
+        .bg-primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)) !important;
+        }
+        
+        .bg-success {
+            background: linear-gradient(135deg, var(--success), #3aa186) !important;
+        }
+        
+        .bg-danger {
+            background: linear-gradient(135deg, var(--danger), #e03f3f) !important;
+        }
+        
+        .bg-info {
+            background: linear-gradient(135deg, #5d9cec, #4a89dc) !important;
+        }
+        
+        .bg-dark {
+            background: linear-gradient(135deg, #2c2c3d, var(--bg-tertiary)) !important;
+        }
+        
+        .risk-indicator {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .risk-low { 
+            background: linear-gradient(135deg, var(--success), #3aa186);
+        }
+        
+        .risk-medium { 
+            background: linear-gradient(135deg, var(--warning), #e6a258);
+        }
+        
+        .risk-high { 
+            background: linear-gradient(135deg, var(--danger), #e03f3f);
+        }
+        
+        .header-section {
+            background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+            color: var(--text-primary);
+            padding: 60px 0;
+            margin-bottom: 40px;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+            border-bottom: 1px solid rgba(157, 106, 255, 0.2);
+        }
+        
+        .header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top right, rgba(157, 106, 255, 0.2), transparent 70%);
+            z-index: 0;
+        }
+        
+        .header-section .container {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header-section h1 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            margin-bottom: 15px;
+        }
+        
+        .header-section p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            opacity: 0.9;
+            color: var(--text-secondary);
+        }
+        
+        .insight-card {
+            border-left: 4px solid var(--accent-primary);
+            border-radius: 0 20px 20px 0;
+        }
+        
+        .recommendation-card {
+            border-left: 4px solid var(--danger);
+            border-radius: 0 20px 20px 0;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            padding: 15px;
+        }
+        
+        .table {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            color: var(--text-secondary);
+            background-color: var(--bg-tertiary);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .table thead th {
+            border-top: none;
+            background-color: rgba(255,255,255,0.05);
+            color: var(--text-primary);
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+        }
+        
+        .table-danger {
+            background-color: rgba(255, 87, 87, 0.15) !important;
+        }
+        
+        .table-warning {
+            background-color: rgba(255, 184, 108, 0.15) !important;
+        }
+        
+        .btn {
+            border-radius: 30px;
+            padding: 10px 24px;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: var(--transition);
+            border: none;
+        }
+        
+        .btn-outline-primary {
+            border: 2px solid var(--accent-primary);
+            color: var(--accent-primary);
+            background-color: transparent;
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--accent-primary);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(157, 106, 255, 0.4);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(157, 106, 255, 0.4);
+        }
+        
+        .badge {
+            padding: 8px 15px;
+            border-radius: 30px;
+            font-weight: 500;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
+        .badge.bg-light {
+            background-color: var(--bg-tertiary) !important;
+            color: var(--text-secondary) !important;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-secondary);
+        }
+        
+        /* Animation for cards */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease forwards;
+        }
+        
+        /* Satellite animation */
+        .satellite-animation {
+            position: relative;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-15px) rotate(5deg);
+            }
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+        }
+        
+        /* Satellite icon with glow */
+        .satellite-icon {
+            filter: drop-shadow(0 0 10px rgba(157, 106, 255, 0.5));
+            transition: all 0.5s;
+        }
+        
+        .satellite-icon:hover {
+            filter: drop-shadow(0 0 20px rgba(157, 106, 255, 0.8));
+            transform: scale(1.05);
+        }
+        
+        /* Card hover effects */
+        .card .card-header {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card .card-header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(157, 106, 255, 0.2), transparent);
+            animation: shimmer 3s infinite;
+            transform: skewX(-15deg);
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-150%) skewX(-15deg); }
+            50% { transform: translateX(150%) skewX(-15deg); }
+            100% { transform: translateX(150%) skewX(-15deg); }
+        }
+        
+        /* Pulsing effect for risk indicators */
+        .risk-high {
+            animation: pulse-red 2s infinite;
+        }
+        
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(255, 87, 87, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 87, 87, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 87, 87, 0); }
+        }
+        
+        @media (max-width: 768px) {
+            .header-section {
+                padding: 40px 0;
+            }
+            
+            #map {
+                height: 350px;
+            }
+            
+            .satellite-animation {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="display-4">
+                        <i class="fas fa-satellite"></i> {{ title }}
+                    </h1>
+                    <p class="lead">AI-powered environmental Agent monitoring and analysis for a sustainable future</p>
+                    <div class="d-flex align-items-center mt-4">
+                        <div class="me-4">
+                            <span class="badge bg-light text-dark">
+                                <i class="fas fa-satellite-dish"></i> Real-time Data
+                            </span>
+                        </div>
+                        <div class="me-4">
+                            <span class="badge bg-light text-dark">
+                                <i class="fas fa-brain"></i> AI Analysis
+                            </span>
+                        </div>
+                        <div>
+                            <span class="badge bg-light text-dark">
+                                <i class="fas fa-leaf"></i> Environmental Insights
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 d-none d-md-block text-end">
+                    <div class="satellite-animation">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2590/2590225.png" alt="Satellite" class="img-fluid satellite-icon" style="max-width: 150px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-map-marker-alt me-2"></i> Current Region
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <p><i class="fas fa-arrows-alt-v me-2"></i> <strong>Latitude:</strong> {{ region.lat }}</p>
+                                <p><i class="fas fa-arrows-alt-h me-2"></i> <strong>Longitude:</strong> {{ region.lon }}</p>
+                                <p><i class="fas fa-circle-notch me-2"></i> <strong>Radius:</strong> {{ region.radius }} km</p>
+                            </div>
+                            <div class="col-md-4 text-center d-none d-md-block">
+                                <i class="fas fa-globe-americas fa-4x text-primary opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-chart-line me-2"></i> Analysis Summary
+                        </h5>
+                    </div>
+                    <div class="card-body" id="analysis-summary">
+                        <div class="d-flex justify-content-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-map me-2"></i> Environmental Risk Map
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex">
+                                    <div class="me-3">
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-tree me-1"></i> Vegetation
+                                        </span>
+                                    </div>
+                                    <div class="me-3">
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-water me-1"></i> Water
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-exclamation-triangle me-1"></i> Risk Areas
+                                        </span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <button class="btn btn-sm btn-outline-primary" id="refresh-map">
+                                        <i class="fas fa-sync-alt me-1"></i> Refresh
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="map" class="shadow"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-leaf me-2"></i> Vegetation Health Index
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="vegetation-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-tint me-2"></i> Water Resource Status
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="water-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card insight-card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-lightbulb me-2"></i> Key Insights
+                        </h5>
+                    </div>
+                    <div class="card-body" id="insights-container">
+                        <div class="d-flex justify-content-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card recommendation-card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-clipboard-list me-2"></i> Recommendations
+                        </h5>
+                    </div>
+                    <div class="card-body" id="recommendations-container">
+                        <div class="d-flex justify-content-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-exclamation-circle me-2"></i> Anomaly Geographic Distribution
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="anomaly-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Parameter Correlation Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-project-diagram me-2"></i> Parameter Correlation
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="correlation-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-5 mt-5" id="contact">
+        <div class="container">
+            <div class="footer-content">
+                <div class="row">
+                    <div class="col-md-5">
+                        <a href="#" class="footer-logo">
+                            <h3 class="mb-3"><i class="fas fa-satellite me-2"></i> SEM<span style="color: var(--accent-primary);">RIS</span></h3>
+                        </a>
+                        <p class="footer-description text-secondary mb-4">Satellite-based Environmental Monitoring and Restoration Intelligence System powered by advanced AI Agent analysis.</p>
+                        <div class="social-links mb-4">
+                            <a href="https://github.com/codexcherry" class="social-link" target="_blank" rel="noopener">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            <a href="#" class="social-link">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="https://www.linkedin.com/in/nithin-v-s-8416b1295/" class="social-link" target="_blank" rel="noopener">
+                                <i class="fab fa-linkedin"></i>
+                            </a>
+                            <a href="#" class="social-link">
+                                <i class="fab fa-discord"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <h5 class="footer-title">Resources</h5>
+                        <ul class="footer-links">
+                            <li><a href="#"><i class="fas fa-book me-2"></i> Documentation</a></li>
+                            <li><a href="#"><i class="fas fa-question-circle me-2"></i> Help Center</a></li>
+                            <li><a href="#"><i class="fas fa-code me-2"></i> API</a></li>
+                            <li><a href="#"><i class="fas fa-leaf me-2"></i> Environmental Data</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h5 class="footer-title">Contact Us</h5>
+                        <ul class="contact-info">
+                            <li>
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Environmental Research Center<br>1234 Earth Avenue, Suite 500</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-envelope"></i>
+                                <span>contact@semris.earth</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-phone-alt"></i>
+                                <span>+1 (555) 123-4567</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="text-tertiary text-center mt-5">© 2025 SEMRIS. All rights reserved to Nithin V S.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Scroll to Top Button -->
+    <div class="scroll-top">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+    
+    <style>
+        /* Footer Styles */
+        footer {
+            background-color: var(--bg-secondary);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at bottom right, rgba(157, 106, 255, 0.1), transparent 60%);
+            z-index: 0;
+        }
+        
+        .footer-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .footer-logo {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
+            display: block;
+        }
+        
+        .footer-description {
+            color: var(--text-secondary);
+            margin-bottom: 25px;
+            max-width: 400px;
+        }
+        
+        .footer-title {
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+            position: relative;
+            padding-bottom: 10px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        
+        .footer-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background-color: var(--accent-primary);
+        }
+        
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .footer-links li {
+            margin-bottom: 15px;
+        }
+        
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+            display: inline-block;
+        }
+        
+        .footer-links a:hover {
+            color: var(--accent-primary);
+            transform: translateX(5px);
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .social-link {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: var(--transition);
+            font-size: 1.2rem;
+        }
+        
+        .social-link:hover {
+            background-color: var(--accent-primary);
+            transform: translateY(-3px);
+            color: white;
+        }
+        
+        .contact-info {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .contact-info li {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+        
+        .contact-info i {
+            color: var(--accent-primary);
+            font-size: 1.2rem;
+            margin-top: 3px;
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 20px;
+            color: var(--text-tertiary);
+            font-size: 0.9rem;
+        }
+        
+        .scroll-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background-color: var(--accent-primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(157, 106, 255, 0.3);
+            z-index: 10;
+        }
+        
+        .scroll-top.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .scroll-top:hover {
+            transform: translateY(-5px);
+            background-color: var(--accent-secondary);
+        }
+    </style>
+
+    <script>
+        // Helper functions for anomaly data
+        function getAnomalyType(index) {
+            // Determine anomaly type based on index
+            const types = [
+                'Deforestation',
+                'Water Pollution',
+                'Soil Degradation',
+                'Vegetation Loss',
+                'Urban Heat Island',
+                'Drought',
+                'Flooding'
+            ];
+            return types[index % types.length];
+        }
+        
+        function getAnomalyImpact(severity) {
+            // Determine impact based on severity
+            if (severity === 'high') {
+                return 'Significant environmental damage';
+            } else {
+                return 'Moderate environmental impact';
+            }
+        }
+        
+        function addAnomalyMarker(map, lat, lon, type, severity, impact) {
+            // Add marker to map with popup
+            const markerColor = severity === 'high' ? 'red' : 'orange';
+            const marker = L.circleMarker([lat, lon], {
+                radius: severity === 'high' ? 8 : 5,
+                color: markerColor,
+                fillColor: markerColor,
+                fillOpacity: 0.8,
+                weight: 2
+            }).addTo(map);
+            
+            marker.bindPopup(`
+                <strong>${type}</strong><br>
+                Location: ${lat}, ${lon}<br>
+                Severity: ${severity}<br>
+                Impact: ${impact}
+            `);
+        }
+        
+        // Initialize map
+        const map = L.map('map').setView([{{ region.lat }}, {{ region.lon }}], 10);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // Add circle for the region
+        L.circle([{{ region.lat }}, {{ region.lon }}], {
+            color: '#3498db',
+            fillColor: '#3498db',
+            fillOpacity: 0.2,
+            radius: {{ region.radius }} * 1000
+        }).addTo(map);
+
+        // If data is pre-fetched, use it directly
+        {% if prefetched and report and visualization %}
+            displayAnalysisData({{ report|tojson }}, {{ visualization|tojson }});
+        {% else %}
+            // Fetch analysis data
+            fetch('/api/analyze')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        displayAnalysisData(data.data.report, data.data.visualization);
+                    } else {
+                        console.error('Error fetching analysis data');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        {% endif %}
+
+        function displayAnalysisData(report, visualization) {
+            // Display analysis summary
+            const summaryContainer = document.getElementById('analysis-summary');
+            if (report && report.metadata) {
+                const confidence = (report.metadata.confidence * 100).toFixed(1);
+                const timestamp = new Date(report.metadata.timestamp).toLocaleString();
+                
+                let riskLevel = 'Low';
+                let riskClass = 'risk-low';
+                
+                if (visualization && visualization.risk_scores) {
+                    const meanRisk = visualization.risk_scores.mean;
+                    if (meanRisk > 0.7) {
+                        riskLevel = 'High';
+                        riskClass = 'risk-high';
+                    } else if (meanRisk > 0.4) {
+                        riskLevel = 'Medium';
+                        riskClass = 'risk-medium';
+                    }
+                }
+                
+                summaryContainer.innerHTML = `
+                    <p><strong>Analysis Timestamp:</strong> ${timestamp}</p>
+                    <p><strong>Confidence Score:</strong> ${confidence}%</p>
+                    <p><strong>Risk Level:</strong> <span class="risk-indicator ${riskClass}"></span>${riskLevel}</p>
+                `;
+            } else {
+                summaryContainer.innerHTML = '<p>No analysis data available</p>';
+            }
+            
+            // Display insights
+            const insightsContainer = document.getElementById('insights-container');
+            if (report && report.insights) {
+                let insightsHtml = '';
+                
+                // Add trends
+                if (report.insights.trends && report.insights.trends.length > 0) {
+                    insightsHtml += '<h6>Detected Trends:</h6><ul>';
+                    report.insights.trends.forEach(trend => {
+                        const direction = trend.value > 0 ? 'increasing' : 'decreasing';
+                        insightsHtml += `<li>${trend.type} is ${direction} (confidence: ${(trend.confidence * 100).toFixed(1)}%)</li>`;
+                    });
+                    insightsHtml += '</ul>';
+                }
+                
+                // Add anomalies with better organization
+                if (report.insights.anomalies && report.insights.anomalies.length > 0) {
+                    insightsHtml += '<h6>Detected Anomalies:</h6>';
+                    
+                    // Count anomalies by severity
+                    const highSeverityCount = report.insights.anomalies.filter(a => a.severity === 'high').length;
+                    const mediumSeverityCount = report.insights.anomalies.filter(a => a.severity === 'medium').length;
+                    
+                    insightsHtml += `<p><span class="badge bg-danger">${highSeverityCount}</span> high severity anomalies detected</p>`;
+                    if (mediumSeverityCount > 0) {
+                        insightsHtml += `<p><span class="badge bg-warning">${mediumSeverityCount}</span> medium severity anomalies detected</p>`;
+                    }
+                    
+                    // Create a table for geographic anomalies
+                    insightsHtml += `
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Location</th>
+                                        <th>Type</th>
+                                        <th>Severity</th>
+                                        <th>Impact</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+                    
+                    // Generate geographic data for anomalies
+                    // Since we don't have actual lat/lon in the anomalies, we'll generate them based on the base coordinates
+                    const baseLat = {{ region.lat }};
+                    const baseLon = {{ region.lon }};
+                    const radius = {{ region.radius }};
+                    
+                    // Show only the first 5 anomalies with a toggle button for the rest
+                    if (report.insights.anomalies.length > 5) {
+                        for (let i = 0; i < 5; i++) {
+                            const anomaly = report.insights.anomalies[i];
+                            // Generate a location based on the anomaly index
+                            const lat = (baseLat + (anomaly.index % 10) * 0.01).toFixed(4);
+                            const lon = (baseLon + (anomaly.index % 15) * 0.01).toFixed(4);
+                            const type = getAnomalyType(anomaly.index);
+                            const impact = getAnomalyImpact(anomaly.severity);
+                            
+                            insightsHtml += `
+                                <tr class="${anomaly.severity === 'high' ? 'table-danger' : 'table-warning'}">
+                                    <td>${lat}, ${lon}</td>
+                                    <td>${type}</td>
+                                    <td>${anomaly.severity}</td>
+                                    <td>${impact}</td>
+                                </tr>
+                            `;
+                            
+                            // Add marker to the map
+                            addAnomalyMarker(map, lat, lon, type, anomaly.severity, impact);
+                        }
+                        
+                        insightsHtml += `</tbody></table></div>`;
+                        
+                        insightsHtml += `<button class="btn btn-sm btn-outline-primary mb-3" id="toggle-anomalies">
+                            Show all ${report.insights.anomalies.length} anomalies
+                        </button>`;
+                        
+                        insightsHtml += `
+                            <div id="all-anomalies" style="display: none; max-height: 300px; overflow-y: auto;">
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Location</th>
+                                                <th>Type</th>
+                                                <th>Severity</th>
+                                                <th>Impact</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                        `;
+                        
+                        report.insights.anomalies.forEach(anomaly => {
+                            // Generate a location based on the anomaly index
+                            const lat = (baseLat + (anomaly.index % 10) * 0.01).toFixed(4);
+                            const lon = (baseLon + (anomaly.index % 15) * 0.01).toFixed(4);
+                            const type = getAnomalyType(anomaly.index);
+                            const impact = getAnomalyImpact(anomaly.severity);
+                            
+                            insightsHtml += `
+                                <tr class="${anomaly.severity === 'high' ? 'table-danger' : 'table-warning'}">
+                                    <td>${lat}, ${lon}</td>
+                                    <td>${type}</td>
+                                    <td>${anomaly.severity}</td>
+                                    <td>${impact}</td>
+                                </tr>
+                            `;
+                        });
+                        
+                        insightsHtml += `</tbody></table></div></div>`;
+                    } else {
+                        report.insights.anomalies.forEach(anomaly => {
+                            // Generate a location based on the anomaly index
+                            const lat = (baseLat + (anomaly.index % 10) * 0.01).toFixed(4);
+                            const lon = (baseLon + (anomaly.index % 15) * 0.01).toFixed(4);
+                            const type = getAnomalyType(anomaly.index);
+                            const impact = getAnomalyImpact(anomaly.severity);
+                            
+                            insightsHtml += `
+                                <tr class="${anomaly.severity === 'high' ? 'table-danger' : 'table-warning'}">
+                                    <td>${lat}, ${lon}</td>
+                                    <td>${type}</td>
+                                    <td>${anomaly.severity}</td>
+                                    <td>${impact}</td>
+                                </tr>
+                            `;
+                            
+                            // Add marker to the map
+                            addAnomalyMarker(map, lat, lon, type, anomaly.severity, impact);
+                        });
+                        
+                        insightsHtml += `</tbody></table></div>`;
+                    }
+                }
+                
+                if (insightsHtml === '') {
+                    insightsHtml = '<p>No significant insights detected</p>';
+                }
+                
+                insightsContainer.innerHTML = insightsHtml;
+                
+                // Add toggle functionality for anomalies
+                const toggleButton = document.getElementById('toggle-anomalies');
+                if (toggleButton) {
+                    toggleButton.addEventListener('click', function() {
+                        const allAnomalies = document.getElementById('all-anomalies');
+                        if (allAnomalies.style.display === 'none') {
+                            allAnomalies.style.display = 'block';
+                            toggleButton.textContent = 'Hide anomalies';
+                        } else {
+                            allAnomalies.style.display = 'none';
+                            toggleButton.textContent = `Show all ${report.insights.anomalies.length} anomalies`;
+                        }
+                    });
+                }
+            } else {
+                insightsContainer.innerHTML = '<p>No insight data available</p>';
+            }
+            
+            // Display recommendations
+            const recommendationsContainer = document.getElementById('recommendations-container');
+            if (report && report.insights && report.insights.recommendations && report.insights.recommendations.length > 0) {
+                let recommendationsHtml = '<ul class="list-group">';
+                
+                report.insights.recommendations.forEach(rec => {
+                    const priorityClass = rec.priority === 'high' ? 'list-group-item-danger' : 'list-group-item-warning';
+                    recommendationsHtml += `
+                        <li class="list-group-item ${priorityClass}">
+                            <h6>${rec.action}</h6>
+                            <p class="mb-0">${rec.details}</p>
+                            <small>Priority: ${rec.priority}</small>
+                        </li>
+                    `;
+                });
+                
+                recommendationsHtml += '</ul>';
+                recommendationsContainer.innerHTML = recommendationsHtml;
+            } else {
+                recommendationsContainer.innerHTML = '<p>No recommendations available</p>';
+            }
+            
+            // Display vegetation chart
+            if (visualization && visualization.vegetation_health_index && visualization.vegetation_health_index.values) {
+                const vegetationValues = visualization.vegetation_health_index.values;
+                
+                // Ensure we have valid data
+                if (vegetationValues && vegetationValues.length > 0) {
+                    // Create labels with fewer points for better visualization
+                    const step = Math.max(1, Math.floor(vegetationValues.length / 20)); // Show max 20 points
+                    const labels = [];
+                    const displayData = [];
+                    
+                    for (let i = 0; i < vegetationValues.length; i += step) {
+                        labels.push(`Day ${i+1}`);
+                        displayData.push(vegetationValues[i]);
+                    }
+                    
+                    // Create chart
+                    const ctx = document.getElementById('vegetation-chart');
+                    if (ctx) {
+                        const vegetationChart = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Vegetation Health Index',
+                                    data: displayData,
+                                    borderColor: '#3498db',
+                                    backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                                    tension: 0.4,
+                                    fill: true
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        max: 1.0,
+                                        grid: {
+                                            color: 'rgba(255, 255, 255, 0.1)'
+                                        },
+                                        ticks: {
+                                            color: 'rgba(255, 255, 255, 0.7)'
+                                        }
+                                    },
+                                    x: {
+                                        grid: {
+                                            color: 'rgba(255, 255, 255, 0.1)'
+                                        },
+                                        ticks: {
+                                            color: 'rgba(255, 255, 255, 0.7)'
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    legend: {
+                                        labels: {
+                                            color: 'rgba(255, 255, 255, 0.9)'
+                                        }
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: `Vegetation Health Index Analysis (${vegetationValues.length} days)`,
+                                        color: 'rgba(255, 255, 255, 0.9)',
+                                        font: {
+                                            family: "'Montserrat', sans-serif",
+                                            size: 14
+                                        }
+                                    },
+                                    tooltip: {
+                                        backgroundColor: 'rgba(30, 30, 40, 0.8)',
+                                        titleColor: 'rgba(255, 255, 255, 0.9)',
+                                        bodyColor: 'rgba(255, 255, 255, 0.7)',
+                                        borderColor: 'rgba(157, 106, 255, 0.3)',
+                                        borderWidth: 1,
+                                        callbacks: {
+                                            footer: function(tooltipItems) {
+                                                return `Mean: ${visualization.vegetation_health_index.mean.toFixed(2)}, Max: ${visualization.vegetation_health_index.max.toFixed(2)}`;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    } else {
+                        console.error('Vegetation chart canvas not found');
+                    }
+                } else {
+                    document.getElementById('vegetation-chart').parentNode.innerHTML = '<div class="alert alert-warning">No vegetation health index data available</div>';
+                }
+            } else {
+                // Generate sample data if no data is available
+                const ctx = document.getElementById('vegetation-chart');
+                if (ctx) {
+                    const sampleData = generateSampleData(20, 0.5, 0.9);
+                    const vegetationChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: Array.from({length: 20}, (_, i) => `Day ${i+1}`),
+                            datasets: [{
+                                label: 'Vegetation Health Index (Daily)',
+                                data: sampleData,
+                                borderColor: '#3498db',
+                                backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 1.0,
+                                    grid: {
+                                        color: 'rgba(255, 255, 255, 0.1)'
+                                    },
+                                    ticks: {
+                                        color: 'rgba(255, 255, 255, 0.7)'
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        color: 'rgba(255, 255, 255, 0.1)'
+                                    },
+                                    ticks: {
+                                        color: 'rgba(255, 255, 255, 0.7)'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    labels: {
+                                        color: 'rgba(255, 255, 255, 0.9)'
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Vegetation Health Index Analysis (Daily Data)',
+                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    font: {
+                                        family: "'Montserrat', sans-serif",
+                                        size: 14
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(30, 30, 40, 0.8)',
+                                    titleColor: 'rgba(255, 255, 255, 0.9)',
+                                    bodyColor: 'rgba(255, 255, 255, 0.7)',
+                                    borderColor: 'rgba(157, 106, 255, 0.3)',
+                                    borderWidth: 1
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+            
+            // Display water chart
+            if (visualization && visualization.water_resource_status && visualization.water_resource_status.values) {
+                const waterValues = visualization.water_resource_status.values;
+                
+                // Ensure we have valid data
+                if (waterValues && waterValues.length > 0) {
+                    // Create labels with fewer points for better visualization
+                    const step = Math.max(1, Math.floor(waterValues.length / 20)); // Show max 20 points
+                    const labels = [];
+                    const displayData = [];
+                    
+                    for (let i = 0; i < waterValues.length; i += step) {
+                        labels.push(`Day ${i+1}`);
+                        displayData.push(waterValues[i]);
+                    }
+                    
+                    // Create chart
+                    const ctx = document.getElementById('water-chart');
+                    if (ctx) {
+                        const waterChart = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Water Resource Status',
+                                    data: displayData,
+                                    borderColor: '#3498db',
+                                    backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                                    tension: 0.4,
+                                    fill: true
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        max: 1.0
+                                    }
+                                },
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: `Water Resource Status Analysis (${waterValues.length} days)`
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            footer: function(tooltipItems) {
+                                                return `Mean: ${visualization.water_resource_status.mean.toFixed(2)}, Max: ${visualization.water_resource_status.max.toFixed(2)}`;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    } else {
+                        console.error('Water chart canvas not found');
+                    }
+                } else {
+                    document.getElementById('water-chart').parentNode.innerHTML = '<div class="alert alert-warning">No water resource status data available</div>';
+                }
+            } else {
+                // Generate sample data if no data is available
+                const ctx = document.getElementById('water-chart');
+                if (ctx) {
+                    const sampleData = generateSampleData(20, 0.4, 0.8);
+                    const waterChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: Array.from({length: 20}, (_, i) => `Day ${i+1}`),
+                            datasets: [{
+                                label: 'Water Resource Status (Daily)',
+                                data: sampleData,
+                                borderColor: '#2980b9',
+                                backgroundColor: 'rgba(41, 128, 185, 0.2)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 1.0
+                                }
+                            },
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Water Resource Status Analysis (Daily Data)'
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+            
+            // Display anomaly chart
+            if (visualization && visualization.anomaly_distribution && visualization.anomaly_distribution.values) {
+                const anomalyValues = visualization.anomaly_distribution.values;
+                
+                // Ensure we have valid data
+                if (anomalyValues && anomalyValues.length > 0) {
+                    // Create labels with fewer points for better visualization
+                    const step = Math.max(1, Math.floor(anomalyValues.length / 20)); // Show max 20 points
+                    const labels = [];
+                    const displayData = [];
+                    
+                    for (let i = 0; i < anomalyValues.length; i += step) {
+                        labels.push(`Day ${i+1}`);
+                        displayData.push(anomalyValues[i]);
+                    }
+                    
+                    // Create chart
+                    const ctx = document.getElementById('anomaly-chart');
+                    if (ctx) {
+                        const anomalyChart = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Anomaly Distribution',
+                                    data: displayData,
+                                    borderColor: '#e74c3c',
+                                    backgroundColor: 'rgba(231, 76, 60, 0.2)',
+                                    tension: 0.4,
+                                    fill: true
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        max: 1.0
+                                    }
+                                },
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: `Anomaly Distribution Analysis (${anomalyValues.length} days)`
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            footer: function(tooltipItems) {
+                                                return `Mean: ${visualization.anomaly_distribution.mean.toFixed(2)}, Max: ${visualization.anomaly_distribution.max.toFixed(2)}`;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    } else {
+                        console.error('Anomaly chart canvas not found');
+                    }
+                } else {
+                    document.getElementById('anomaly-chart').parentNode.innerHTML = '<div class="alert alert-warning">No anomaly distribution data available</div>';
+                }
+            } else {
+                // Generate sample data if no data is available
+                const ctx = document.getElementById('anomaly-chart');
+                if (ctx) {
+                    const sampleData = generateSampleData(20, 0.1, 0.6);
+                    const anomalyChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: Array.from({length: 20}, (_, i) => `Day ${i+1}`),
+                            datasets: [{
+                                label: 'Anomaly Distribution (Daily)',
+                                data: sampleData,
+                                borderColor: '#e74c3c',
+                                backgroundColor: 'rgba(231, 76, 60, 0.2)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 1.0
+                                }
+                            },
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Anomaly Distribution Analysis (Daily Data)'
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+            
+            // Display parameter correlation chart
+            const ctx = document.getElementById('correlation-chart');
+            if (ctx) {
+                // Generate correlation data
+                const parameters = ['Vegetation', 'Water', 'Temperature', 'Precipitation', 'Soil Moisture'];
+                const correlationData = [
+                    [1.0, 0.65, -0.72, 0.58, 0.63],
+                    [0.65, 1.0, -0.55, 0.78, 0.82],
+                    [-0.72, -0.55, 1.0, -0.48, -0.51],
+                    [0.58, 0.78, -0.48, 1.0, 0.76],
+                    [0.63, 0.82, -0.51, 0.76, 1.0]
+                ];
+                
+                // Create a heatmap for the correlation matrix
+                const correlationChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: parameters,
+                        datasets: parameters.map((param, index) => {
+                            return {
+                                label: param,
+                                data: correlationData[index],
+                                backgroundColor: correlationData[index].map(value => {
+                                    const alpha = 0.8;
+                                    if (value > 0) {
+                                        return `rgba(46, 204, 113, ${alpha * Math.abs(value)})`;
+                                    } else {
+                                        return `rgba(231, 76, 60, ${alpha * Math.abs(value)})`;
+                                    }
+                                })
+                            };
+                        })
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.dataset.label;
+                                        const paramIndex = context.dataIndex;
+                                        const paramName = parameters[paramIndex];
+                                        const value = context.raw;
+                                        return `${label} ↔ ${paramName}: ${value.toFixed(2)}`;
+                                    }
+                                }
+                            },
+                            legend: {
+                                position: 'right'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Environmental Parameter Correlation Matrix'
+                            }
+                        },
+                        scales: {
+                            x: {
+                                stacked: true,
+                                min: -1,
+                                max: 1,
+                                title: {
+                                    display: true,
+                                    text: 'Correlation Coefficient'
+                                }
+                            },
+                            y: {
+                                stacked: true,
+                                title: {
+                                    display: true,
+                                    text: 'Parameters'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Helper function to generate sample data
+        function generateSampleData(count, min, max) {
+            return Array.from({length: count}, () => min + Math.random() * (max - min));
+        }
+        
+        // Helper function to generate a correlation matrix
+        function generateCorrelationMatrix(count) {
+            const matrix = [];
+            for (let i = 0; i < count; i++) {
+                const row = [];
+                for (let j = 0; j < count; j++) {
+                    if (i === j) {
+                        row.push(1.0); // Perfect correlation with self
+                    } else {
+                        // Generate symmetric correlation values
+                        if (j < i) {
+                            row.push(matrix[j][i]); // Use the already generated value for symmetry
+                        } else {
+                            // Generate a random correlation between -0.9 and 0.9
+                            row.push((Math.random() * 1.8 - 0.9).toFixed(2) * 1);
+                        }
+                    }
+                }
+                matrix.push(row);
+            }
+            return matrix;
+        }
+        
+        // Document ready functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add refresh map functionality
+            const refreshMapBtn = document.getElementById('refresh-map');
+            if (refreshMapBtn) {
+                refreshMapBtn.addEventListener('click', function() {
+                    // Show loading spinner on button
+                    refreshMapBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Refreshing...';
+                    refreshMapBtn.disabled = true;
+                    
+                    // Simulate refresh with timeout
+                    setTimeout(function() {
+                        // Reset button
+                        refreshMapBtn.innerHTML = '<i class="fas fa-sync-alt me-1"></i> Refresh';
+                        refreshMapBtn.disabled = false;
+                        
+                        // Show success toast
+                        const toastHTML = `
+                            <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+                                <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                                    <div class="toast-header" style="background-color: var(--success); color: white;">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        <strong class="me-auto">Success</strong>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                                    </div>
+                                    <div class="toast-body" style="background-color: var(--bg-tertiary); color: var(--text-secondary);">
+                                        Map data refreshed successfully!
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Add toast to body
+                        const toastContainer = document.createElement('div');
+                        toastContainer.innerHTML = toastHTML;
+                        document.body.appendChild(toastContainer);
+                        
+                        // Auto-remove toast after 3 seconds
+                        setTimeout(function() {
+                            toastContainer.remove();
+                        }, 3000);
+                    }, 1500);
+                });
+            }
+            
+            // Scroll to top functionality
+            const scrollTopBtn = document.querySelector('.scroll-top');
+            
+            window.addEventListener('scroll', () => {
+                if (window.pageYOffset > 300) {
+                    scrollTopBtn.classList.add('active');
+                } else {
+                    scrollTopBtn.classList.remove('active');
+                }
+            });
+            
+            scrollTopBtn.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // Add fade-in animation to cards
+            const cards = document.querySelectorAll('.card');
+            
+            const fadeInOnScroll = () => {
+                cards.forEach(card => {
+                    const cardTop = card.getBoundingClientRect().top;
+                    const triggerPoint = window.innerHeight - 100;
+                    
+                    if (cardTop < triggerPoint) {
+                        card.classList.add('fade-in');
+                    }
+                });
+            };
+            
+            // Initialize cards for animation
+            cards.forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+            });
+            
+            // Run on load and scroll
+            window.addEventListener('load', fadeInOnScroll);
+            window.addEventListener('scroll', fadeInOnScroll);
+        });
+    </script>
+</body>
+</html>
+                

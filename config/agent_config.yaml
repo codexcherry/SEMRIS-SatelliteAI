@@ -1,0 +1,115 @@
+# Agent System Configuration
+
+# Environmental Agent Configuration
+environmental_agent:
+  id: "env_agent_001"
+  type: "environmental"
+  model:
+    name: "gpt-4"  # Can be replaced with any compatible LLM
+    temperature: 0.7
+    max_tokens: 1000
+  memory:
+    max_size: 1000
+    persistence_path: "./data/agent_memory"
+  learning:
+    learning_rate: 0.01
+    batch_size: 32
+    memory_size: 1000
+    model_path: "./models/env_agent"
+  document_store:
+    collection_name: "environmental_data"
+    persist_directory: "./data/chroma"
+    embedding_model: "all-MiniLM-L6-v2"
+
+# Prediction Agent Configuration
+prediction_agent:
+  id: "pred_agent_001"
+  type: "prediction"
+  model:
+    name: "gpt-4"
+    temperature: 0.5
+    max_tokens: 1000
+  memory:
+    max_size: 1000
+    persistence_path: "./data/agent_memory"
+  learning:
+    learning_rate: 0.01
+    batch_size: 32
+    memory_size: 1000
+    model_path: "./models/pred_agent"
+
+# Coordination Agent Configuration
+coordination_agent:
+  id: "coord_agent_001"
+  type: "coordination"
+  model:
+    name: "gpt-4"
+    temperature: 0.6
+    max_tokens: 1000
+  memory:
+    max_size: 1000
+    persistence_path: "./data/agent_memory"
+
+# RAG System Configuration
+rag:
+  document_store:
+    type: "chroma"
+    settings:
+      persist_directory: "./data/chroma"
+      collection_name: "semris_knowledge"
+  retriever:
+    type: "semantic"
+    model_name: "all-MiniLM-L6-v2"
+    max_context_age_days: 30
+    top_k: 5
+
+# Model Context Protocol Configuration
+mcp:
+  context_manager:
+    max_context_size: 1000
+    pruning_threshold: 0.8
+  memory_manager:
+    max_memories: 1000
+    persistence_path: "./data/memories"
+  state_tracker:
+    persistence_path: "./data/states"
+    backup_frequency: 300  # seconds
+
+# Agent Development Kit Configuration
+adk:
+  learning:
+    default_learning_rate: 0.01
+    max_memory_size: 1000
+    model_path: "./models"
+  behavior:
+    adjustment_threshold: 0.1
+    exploration_rate: 0.2
+  metrics:
+    tracking_window: 100
+    minimum_samples: 32
+
+# Communication Configuration
+communication:
+  protocol:
+    type: "async"
+    timeout: 30  # seconds
+  message_bus:
+    type: "redis"
+    host: "localhost"
+    port: 6379
+    db: 0
+  sync:
+    retry_attempts: 3
+    backoff_factor: 2
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  handlers:
+    file:
+      path: "./logs/agent_system.log"
+      max_size: 10485760  # 10MB
+      backup_count: 5
+    console:
+      enabled: true 
